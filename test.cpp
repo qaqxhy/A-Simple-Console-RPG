@@ -40,9 +40,10 @@ int main(int argc, char const *argv[])
     // {
     //     cout << argv[i] << endl;
     // }
-    printf(UNDERLINE);
-    printf("  ");
-    printf(CLOSEUNDERLINE);
+    // printf(UNDERLINE);
+    // printf(CLOSEUNDERLINE);
 
+    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), {1,0});
+    printf("l");
     return 0;
 }

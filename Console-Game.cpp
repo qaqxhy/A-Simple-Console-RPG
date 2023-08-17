@@ -29,7 +29,7 @@ struct PLAYER
     int health;
     int attach;
     int level;
-    int levelsave[100][3]; // passed?    last x    last y
+    short levelsave[100][3]; // passed?    last x    last y
 } player;
 
 struct MAP
@@ -41,9 +41,28 @@ struct MAP
     int rey;
 } maploaded;
 
+void Render();
+bool CheckSeqPos(int x, int y);
+void RealTimeLogic();
+void Save();
+void CheckMap();
+void ReadMap();
+void CheckSave();
+void ReadSave();
+void ClearSrc();
+void SetWindowSize(int width, int height);
+void Init();
+
 int main(int argc, char const *argv[])
 {
-    GameMode = CheckArg(&argc, *argv);
+    if (argc > 1)
+    {
+        int argcmp = strcmp(argv[1], "-editor");
+        if (argcmp == 0)
+        {
+            GameMode = 1;
+        }
+    }
     Init();
     while (1)
     {
@@ -66,22 +85,34 @@ void Render()
         {
             if (player.levelsave[player.level][1] == x && player.levelsave[player.level][2] == y)
             {
-                if(GameMode)
+                if (GameMode)
                 {
-                    strcat(vram,UNDERLINE);
-                    strcat(vram, block[maploaded.map[x][y] - '0']);
-                    strcat(vram,CLOSEUNDERLINE);
+                    // strcat(vram, UNDERLINE);
+                    if (x == maploaded.rex && y == maploaded.rey)
+                    {
+                        strcat(vram, block[2]);
+                    }
+                    else
+                    {
+                        strcat(vram, block[maploaded.map[x][y] - '0']);
+                    }
+                    // strcat(vram, CLOSEUNDERLINE);
                 }
                 else
                 {
                     strcat(vram, block[2]);
                 }
             }
+            else if (x == maploaded.rex && y == maploaded.rey && GameMode == 1)
+            {
+                strcat(vram, block[2]);
+            }
             else
             {
                 strcat(vram, block[maploaded.map[x][y] - '0']);
             }
         }
+        strcat(vram, "\n");
     }
     if (GameMode == 0)
     {
@@ -94,6 +125,10 @@ void Render()
     }
     puts(vram); // faster than printf and cout
                 //! but 1 more \n behinde;
+    if (GameMode == 1)
+    {
+        SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), {short(player.levelsave[player.level][2] * short(2)), short(player.levelsave[player.level][1] + 1)});
+    }
 }
 
 bool CheckSeqPos(int x, int y)
@@ -126,6 +161,7 @@ void RealTimeLogic()
         case 27: // ESC
         {
             Save();
+            ClearSrc();
             exit(0);
             break;
         }
@@ -328,6 +364,7 @@ void ReadSave()
 
 void ClearSrc()
 {
+    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), {0, 30});
     puts("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), {0, 0});
 }
@@ -337,19 +374,18 @@ void SetWindowSize(int width, int height)
     char setWinSize[64];
     sprintf(setWinSize, "mode con cols=%d lines=%d", width, height);
     system(setWinSize);
-    delete setWinSize;
 }
 
 void Init()
 {
     system("chcp 65001"); // UTF 8 mode
     setlocale(LC_ALL, "en_US.UTF-8");
-    system("color F0");
-    setvbuf(stdout, NULL, _IONBF, 0);
+    // system("color 0F");
+    // setvbuf(stdout, NULL, _IONBF, 0);
 
     if (GameMode)
     {
-        SetWindowSize(WinWidth + 2, WinHeight + 1);
+        SetWindowSize(WinWidth, WinHeight + 1);
     }
     else
     {
@@ -391,14 +427,6 @@ void Init()
             Render();
             return;
         }
-    }
-}
-
-short CheckArg(int *argc, const char argv[])
-{
-    if (*argc > 1)
-    {
-        return !(strcmp(&argv[1], "-editor"));
     }
 }
 
