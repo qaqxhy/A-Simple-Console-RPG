@@ -12,9 +12,12 @@
 #define MP_Height 30
 #define MP_Width 50
 
+#define UNDERLINE "\033[4m"
+#define CLOSEUNDERLINE "\033[0m"
+
 short GameMode = 0;
 
-const char block[4][16] = {"  ", "██", "◯ ", "<-"};
+const char block[4][16] = {"  ", "██", "◯ "};
 
 const int WinHeight = (MP_Height + 3);
 const int WinWidth = (MP_Width * 2);
@@ -56,62 +59,29 @@ void Render()
     ClearSrc();
     memset(vram, 0, sizeof(vram));
 
-    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), {0, 0});
     sprintf(vram, "HP: %d    AT: %d    LV: %d    Location: %d,%d\n", player.health, player.attach, player.level, player.levelsave[player.level][1], player.levelsave[player.level][2]);
     for (int x = 0; x < MP_Height; x++)
     {
-        if (GameMode == 1)
+        for (int y = 0; y < MP_Width; y++)
         {
-            for (int y = 0; y < MP_Width; y++)
+            if (player.levelsave[player.level][1] == x && player.levelsave[player.level][2] == y)
             {
-                if (player.levelsave[player.level][1] == x && player.levelsave[player.level][2] == y)
+                if(GameMode)
                 {
-                    if (maploaded.rex == x && maploaded.rey == y)
-                    {
-                        strcat(vram, block[2]);
-                    }
-                    else
-                    {
-                        strcat(vram, block[maploaded.map[x][y] - '0']);
-                    }
-                    strcat(vram, block[3]);
-                }
-                else if (maploaded.rex == x && maploaded.rey == y)
-                {
-                    if (maploaded.rex == player.levelsave[player.level][1] && maploaded.rey == player.levelsave[player.level][2] + 1)
-                    {
-                        continue;
-                    }
-                    else
-                    {
-                        strcat(vram, block[2]);
-                    }
-                }
-                else if (player.levelsave[player.level][1] == x && player.levelsave[player.level][2] + 1 == y)
-                {
-                    continue;
+                    strcat(vram,UNDERLINE);
+                    strcat(vram, block[maploaded.map[x][y] - '0']);
+                    strcat(vram,CLOSEUNDERLINE);
                 }
                 else
-                {
-                    strcat(vram, block[maploaded.map[x][y] - '0']);
-                }
-            }
-        }
-        else
-        {
-            for (int y = 0; y < MP_Width; y++)
-            {
-                if (player.levelsave[player.level][1] == x && player.levelsave[player.level][2] == y)
                 {
                     strcat(vram, block[2]);
                 }
-                else
-                {
-                    strcat(vram, block[maploaded.map[x][y] - '0']);
-                }
+            }
+            else
+            {
+                strcat(vram, block[maploaded.map[x][y] - '0']);
             }
         }
-        strcat(vram, "\n");
     }
     if (GameMode == 0)
     {
@@ -359,6 +329,7 @@ void ReadSave()
 void ClearSrc()
 {
     puts("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), {0, 0});
 }
 
 void SetWindowSize(int width, int height)

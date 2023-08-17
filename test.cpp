@@ -9,6 +9,10 @@
 #include <fstream>
 #include <direct.h>
 
+#define UNDERLINE "\033[4m"
+
+#define CLOSEUNDERLINE "\033[0m"
+
 using namespace std;
 int main(int argc, char const *argv[])
 {
@@ -32,9 +36,13 @@ int main(int argc, char const *argv[])
 
     // _mkdir("./dat");
     // _mkdir("./dat/map");
-    for (int i = 0; i < argc; i++)
-    {
-        cout << argv[i] << endl;
-    }
+    // for (int i = 0; i < argc; i++)
+    // {
+    //     cout << argv[i] << endl;
+    // }
+    printf(UNDERLINE);
+    printf("  ");
+    printf(CLOSEUNDERLINE);
+
     return 0;
 }
