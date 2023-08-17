@@ -422,6 +422,7 @@ void Init()
         }
     }
 }
+
 short CheckArg(int *argc, const char argv[])
 {
     if (*argc > 1)
