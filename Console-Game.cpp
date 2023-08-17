@@ -17,7 +17,7 @@
 
 short GameMode = 0;
 
-const char block[4][16] = {"  ", "██", "◯ "};
+const char block[4][16] = {"  ", "██", "◯ ", "★"};
 
 const int WinHeight = (MP_Height + 3);
 const int WinWidth = (MP_Width * 2);
@@ -39,6 +39,8 @@ struct MAP
                         // X
     int rex;
     int rey;
+    int endx;
+    int endy;
 } maploaded;
 
 void Render();
@@ -273,9 +275,9 @@ void Save()
     if (GameMode == 0)
     {
         outfile.open("./data/save.dat", std::ios::out | std::ios::trunc);
-        outfile << player.health << std::endl
-                << player.attach << std::endl
-                << player.level << std::endl;
+        outfile << player.health << " "
+                << player.attach << " "
+                << player.level << " \n";
         for (int i = 0; i < 100; i++)
         {
             outfile << player.levelsave[i][0] << " " << player.levelsave[i][1] << " " << player.levelsave[i][2] << std::endl;
@@ -286,8 +288,10 @@ void Save()
     char maploc[64];
     sprintf(maploc, "./data/maps/map%d.dat", player.level);
     outfile.open(maploc, std::ios::out | std::ios::trunc);
-    outfile << maploaded.rex << std::endl
-            << maploaded.rey << std::endl;
+    outfile << maploaded.rex << " "
+            << maploaded.rey << " \n";
+    outfile << maploaded.endx << " "
+            << maploaded.endy << " \n";
     for (int x = 0; x < MP_Height; x++)
     {
         for (int y = 0; y < MP_Width; y++)

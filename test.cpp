@@ -44,6 +44,6 @@ int main(int argc, char const *argv[])
     // printf(CLOSEUNDERLINE);
 
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), {1,0});
-    printf("l");
+    printf("◈ ");
     return 0;
 }
