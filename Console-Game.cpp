@@ -94,6 +94,10 @@ void Render()
                     {
                         strcat(vram, block[2]);
                     }
+                    else if (x == maploaded.endx && y == maploaded.endy)
+                    {
+                        strcat(vram, block[3]);
+                    }
                     else
                     {
                         strcat(vram, block[maploaded.map[x][y] - '0']);
@@ -109,6 +113,10 @@ void Render()
             {
                 strcat(vram, block[2]);
             }
+            else if (x == maploaded.endx && y == maploaded.endy && GameMode == 1)
+            {
+                strcat(vram, block[3]);
+            }
             else
             {
                 strcat(vram, block[maploaded.map[x][y] - '0']);
@@ -123,7 +131,7 @@ void Render()
     else if (GameMode == 1)
     {
         strcat(vram, "WASD: Move    <>: Change Level    Enter: Save Map    ESC: Save Map and Quit\n");
-        strcat(vram, "0: Clear Block    1: Block    2: Set Res Point");
+        strcat(vram, "0: Clear Block    1: Block    2: Set Res Point    3:Set End Point");
     }
     puts(vram); // faster than printf and cout
                 //! but 1 more \n behinde;
@@ -253,10 +261,13 @@ void RealTimeLogic()
             }
             break;
         }
-        case 51:
+        case 51: // 3
         {
             if (GameMode == 1)
             {
+                maploaded.map[player.levelsave[player.level][1]][player.levelsave[player.level][2]] = '0';
+                maploaded.endx = player.levelsave[player.level][1];
+                maploaded.endy = player.levelsave[player.level][2];
             }
             break;
         }
