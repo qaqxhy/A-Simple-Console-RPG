@@ -67,7 +67,6 @@ int main(int argc, char const *argv[])
     while (1)
     {
         RealTimeLogic();
-        Render();
     }
 
     return 0;
@@ -76,7 +75,7 @@ int main(int argc, char const *argv[])
 // Define Functions
 void Render()
 {
-    // ClearSrc();
+    ClearSrc();
     memset(vram, 0, sizeof(vram));
 
     sprintf(vram, "HP: %d    AT: %d    LV: %d    Location: %d,%d\n", player.health, player.attach, player.level, player.levelsave[player.level][1], player.levelsave[player.level][2]);
@@ -117,7 +116,7 @@ void Render()
     else if (GameMode == 1)
     {
         strcat(vram, "WASD: Move    <>: Change Level    Enter: Save Map    ESC: Save Map and Quit\n");
-        strcat(vram, "0: Clear Block    1: Block    2: Set Res Point    3:Set End Point");
+        strcat(vram, "0: Clear Block    1: Block    2: Set Res Point    3:Set End Point    /: Command");
     }
     puts(vram); // faster than printf and cout
                 //! but 1 more \n behinde;
@@ -221,6 +220,14 @@ void RealTimeLogic()
             Save();
             break;
         }
+        case 47: // "/"
+        {
+            if(GameMode == 1)
+            {
+                SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), {0, 33});
+                
+            }
+        }
         case 48: // 0
         {
             if (GameMode == 1)
@@ -241,7 +248,11 @@ void RealTimeLogic()
         {
             if (GameMode == 1)
             {
+                maploaded.map[maploaded.rex][maploaded.rey] = '0';
                 maploaded.map[player.levelsave[player.level][1]][player.levelsave[player.level][2]] = '2';
+                maploaded.rex = player.levelsave[player.level][1];
+                maploaded.rey = player.levelsave[player.level][2];
+
             }
             break;
         }
@@ -259,6 +270,7 @@ void RealTimeLogic()
         }
         }
         // todo: EventCheck();
+        Render();
     }
 }
 
