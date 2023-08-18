@@ -17,7 +17,7 @@
 
 short GameMode = 0;
 
-const char block[4][16] = {"  ", "██", "◯ ", "★"};
+const char block[4][16] = {"  ", "██", "◯ ", "★"}; //
 
 const int WinHeight = (MP_Height + 3);
 const int WinWidth = (MP_Width * 2);
@@ -39,8 +39,6 @@ struct MAP
                         // X
     int rex;
     int rey;
-    int endx;
-    int endy;
 } maploaded;
 
 void Render();
@@ -85,41 +83,28 @@ void Render()
     {
         for (int y = 0; y < MP_Width; y++)
         {
-            if (player.levelsave[player.level][1] == x && player.levelsave[player.level][2] == y)
+            switch (GameMode)
             {
-                if (GameMode)
-                {
-                    // strcat(vram, UNDERLINE);
-                    if (x == maploaded.rex && y == maploaded.rey)
-                    {
-                        strcat(vram, block[2]);
-                    }
-                    else if (x == maploaded.endx && y == maploaded.endy)
-                    {
-                        strcat(vram, block[3]);
-                    }
-                    else
-                    {
-                        strcat(vram, block[maploaded.map[x][y] - '0']);
-                    }
-                    // strcat(vram, CLOSEUNDERLINE);
-                }
-                else
+            case 0:
+            {
+                if (x == player.levelsave[player.level][1] && y == player.levelsave[player.level][2])
                 {
                     strcat(vram, block[2]);
                 }
+                else
+                {
+                    strcat(vram, block[maploaded.map[x][y] - '0']);
+                }
+                break;
             }
-            else if (x == maploaded.rex && y == maploaded.rey && GameMode == 1)
-            {
-                strcat(vram, block[2]);
-            }
-            else if (x == maploaded.endx && y == maploaded.endy && GameMode == 1)
-            {
-                strcat(vram, block[3]);
-            }
-            else
+            case 1:
             {
                 strcat(vram, block[maploaded.map[x][y] - '0']);
+            }
+            default:
+            {
+                break;
+            }
             }
         }
         strcat(vram, "\n");
@@ -151,7 +136,7 @@ bool CheckSeqPos(int x, int y)
     {
         return 0;
     }
-    else if (maploaded.map[x][y] != '0' && GameMode == 0)
+    else if (maploaded.map[x][y] == '1' && GameMode == 0)
     {
         return 0;
     }
@@ -255,9 +240,7 @@ void RealTimeLogic()
         {
             if (GameMode == 1)
             {
-                maploaded.map[player.levelsave[player.level][1]][player.levelsave[player.level][2]] = '0';
-                maploaded.rex = player.levelsave[player.level][1];
-                maploaded.rey = player.levelsave[player.level][2];
+                maploaded.map[player.levelsave[player.level][1]][player.levelsave[player.level][2]] = '2';
             }
             break;
         }
@@ -265,9 +248,7 @@ void RealTimeLogic()
         {
             if (GameMode == 1)
             {
-                maploaded.map[player.levelsave[player.level][1]][player.levelsave[player.level][2]] = '0';
-                maploaded.endx = player.levelsave[player.level][1];
-                maploaded.endy = player.levelsave[player.level][2];
+                maploaded.map[player.levelsave[player.level][1]][player.levelsave[player.level][2]] = '3';
             }
             break;
         }
@@ -276,6 +257,7 @@ void RealTimeLogic()
             break;
         }
         }
+        // todo: EventCheck();
         Render();
     }
 }
@@ -301,8 +283,6 @@ void Save()
     outfile.open(maploc, std::ios::out | std::ios::trunc);
     outfile << maploaded.rex << " "
             << maploaded.rey << " \n";
-    outfile << maploaded.endx << " "
-            << maploaded.endy << " \n";
     for (int x = 0; x < MP_Height; x++)
     {
         for (int y = 0; y < MP_Width; y++)
@@ -317,7 +297,7 @@ void Save()
 void CheckMap()
 {
     bool legalrespoint = 1;
-    if (maploaded.map[maploaded.rex][maploaded.rey] != '0')
+    if (maploaded.map[maploaded.rex][maploaded.rey] != '3')
     {
         legalrespoint = 0;
     }
@@ -325,7 +305,7 @@ void CheckMap()
     {
         for (int y = 0; y < MP_Width; y++)
         {
-            if (legalrespoint == 0 && maploaded.map[x][y] == '0')
+            if (legalrespoint == 0 && maploaded.map[x][y] == '3')
             {
                 maploaded.rex = x;
                 maploaded.rey = y;
