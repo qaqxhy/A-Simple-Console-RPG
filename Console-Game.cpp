@@ -67,6 +67,7 @@ int main(int argc, char const *argv[])
     while (1)
     {
         RealTimeLogic();
+        Render();
     }
 
     return 0;
@@ -75,7 +76,7 @@ int main(int argc, char const *argv[])
 // Define Functions
 void Render()
 {
-    ClearSrc();
+    // ClearSrc();
     memset(vram, 0, sizeof(vram));
 
     sprintf(vram, "HP: %d    AT: %d    LV: %d    Location: %d,%d\n", player.health, player.attach, player.level, player.levelsave[player.level][1], player.levelsave[player.level][2]);
@@ -89,7 +90,7 @@ void Render()
             {
                 if (x == player.levelsave[player.level][1] && y == player.levelsave[player.level][2])
                 {
-                    strcat(vram, block[2]);
+                    strcat(vram, "U ");
                 }
                 else
                 {
@@ -258,7 +259,6 @@ void RealTimeLogic()
         }
         }
         // todo: EventCheck();
-        Render();
     }
 }
 
@@ -390,11 +390,11 @@ void Init()
     CONSOLE_FONT_INFOEX cfi;
     cfi.cbSize = sizeof(cfi);
     cfi.nFont = 0;
-    cfi.dwFontSize.X = 0;  // Width of each character in the font
-    cfi.dwFontSize.Y = 16; // Height
+    cfi.dwFontSize.X = 10;  // Width of each character in the font
+    cfi.dwFontSize.Y = 20; // Height
     cfi.FontFamily = FF_DONTCARE;
     cfi.FontWeight = FW_NORMAL;
-    std::wcscpy(cfi.FaceName, L"Consolas");                                // Choose your font
+    std::wcscpy(cfi.FaceName, L"Courier New");                                // Choose your font
     SetCurrentConsoleFontEx(GetStdHandle(STD_OUTPUT_HANDLE), FALSE, &cfi); // set font
 
     ClearSrc();
