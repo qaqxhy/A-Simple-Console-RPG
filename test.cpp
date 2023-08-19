@@ -101,5 +101,6 @@ int main(int argc, char const *argv[])
     int res = strcmp_asm("123", "123");
     printf("%d", res);
     return 0;
-    char a = 'z' - '0'; //17 74
+    char a = 'z' - 'A'; //17 74
+    char text[] = "Hello, my name is TEST, this is file TEST.CPP, this line is to test how long shoud i give to EVENT::ACT";
 }

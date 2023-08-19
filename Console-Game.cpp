@@ -26,6 +26,13 @@ const int WinWidth = (MP_Width * 2);
 
 char vram[10000];
 
+struct EVENT
+{
+    char id;
+    short type;
+    char act[1024];
+};
+
 struct PLAYER
 {
     int health;
@@ -36,13 +43,17 @@ struct PLAYER
 
 struct MAP
 {
-    char map[100][100]; //  --Y
+    char map[100][100]; //  ---Y
                         // |
                         // X
     int rex;
     int rey;
+    EVENT event[64];
 } maploaded;
 
+void DialogEvent(short id);
+void EventCheck(int x, int y);
+void EditEvent(short idpos);
 static inline int strcmp_asm(const char *cs, const char *ct);
 void CheckCommand(char *command);
 void Render();
@@ -77,6 +88,68 @@ int main(int argc, char const *argv[])
 }
 
 // Define Functions
+void DialogEvent(short id)
+{
+    ClearSrc();
+    puts("────────────────────────────────────────────────Text────────────────────────────────────────────────");
+    int textpos = 0;
+    while (maploaded.event[id].act[textpos] != 0)
+    {
+        if (maploaded.event[id].act[textpos] == '\n')
+        {
+            while (!_kbhit())
+            {
+                // press any key to continue;
+                // _getch();
+            }
+            _getch();
+        }
+        printf("%c", maploaded.event[id].act[textpos++]);
+        Sleep(50);
+    }
+}
+
+void EventCheck(short x, short y)
+{
+    char bl = maploaded.map[x][y];
+    if (maploaded.event[bl - 'A'].id != 0) // event exist
+    {
+        switch (maploaded.event[bl - 'A'].type)
+        {
+        case 0: // dialog
+        {
+            DialogEvent(bl - 'A');
+            break;
+        }
+        default:
+        {
+            break;
+        }
+        }
+    }
+}
+
+void EditEvent(short idpos)
+{
+    memset(maploaded.event[idpos].act, 0, sizeof(maploaded.event[idpos].act));
+    ClearSrc();
+    puts("┌───────────────────────────────────────────────Text───────────────────────────────────────────────┐");
+    puts("└─────────────────────────────Enter END on a single line to end editing────────────────────────────┘");
+    char line[128];
+    memset(line, 0, sizeof(line));
+    while (strcmp_asm(line, "END") != 0)
+    {
+        gets(line);
+        if (strcmp_asm(line, "END") == 0)
+        {
+            break;
+        }
+        strcat(maploaded.event[idpos].act, line);
+        strcat(maploaded.event[idpos].act, "\n");
+    }
+    Save();
+}
+
 static inline int strcmp_asm(const char *cs, const char *ct) // fast string cmp
 {
     int d0, d1;
@@ -117,10 +190,20 @@ void CheckCommand(char *command)
         if (!strcmp_asm(comv[1], "ins"))
         {
             char id = comv[2][0];
-            maploaded.map[player.levelsave[player.level][1]][player.levelsave[player.level][2]] = id;
+            if (id >= 'A' && id <= 'z' && maploaded.event[id - 'A'].id != 0)
+            {
+                maploaded.map[player.levelsave[player.level][1]][player.levelsave[player.level][2]] = id;
+            }
         }
         else if (!strcmp_asm(comv[1], "edit"))
         {
+            char id = comv[2][0];
+            if (id >= 'A' && id <= 'z')
+            {
+                maploaded.event[id - 'A'].id = id;
+                maploaded.event[id - 'A'].type = comv[3][0] - '0';
+                EditEvent(id - 'A');
+            }
         }
     }
     else if (!strcmp_asm(comv[0], "help")) //
@@ -235,9 +318,9 @@ void RealTimeLogic()
             exit(0);
             break;
         }
-        case 102: // F
+        case 102: // interactive
         {
-            player.health++;
+            EventCheck(player.levelsave[player.level][1], player.levelsave[player.level][2]);
             break;
         }
         case 100: // WASD
@@ -349,7 +432,6 @@ void RealTimeLogic()
             break;
         }
         }
-        // todo: EventCheck();
         Render();
     }
 }
@@ -365,7 +447,7 @@ void Save()
                 << player.level << " \n";
         for (int i = 0; i < 100; i++)
         {
-            outfile << player.levelsave[i][0] << " " << player.levelsave[i][1] << " " << player.levelsave[i][2] << std::endl;
+            outfile << player.levelsave[i][0] << " " << player.levelsave[i][1] << " " << player.levelsave[i][2] << "\n";
         }
         outfile.close();
     }
@@ -381,7 +463,22 @@ void Save()
         {
             outfile << maploaded.map[x][y];
         }
-        outfile << std::endl;
+        outfile << "\n";
+    }
+    for (int i = 0; i < 64; i++)
+    {
+        if (maploaded.event[i].id == 0)
+        {
+            continue;
+        }
+        outfile << maploaded.event[i].id << ' ' << maploaded.event[i].type << ' ';
+        int pos = 0;
+        while (maploaded.event[i].act[pos] != 0)
+        {
+            outfile << maploaded.event[i].act[pos];
+            pos++;
+        }
+        outfile << '\0' << '\n';
     }
     outfile.close();
 }
@@ -414,6 +511,7 @@ void CheckMap()
 void ReadMap()
 {
     memset(maploaded.map, 0, sizeof(maploaded.map));
+    memset(maploaded.event, 0, sizeof(maploaded.event));
     std::ifstream infile;
     char maploc[64];
     sprintf(maploc, "./data/maps/map%d.dat", player.level);
@@ -422,6 +520,29 @@ void ReadMap()
     for (int x = 0; x < MP_Height; x++)
     {
         infile >> maploaded.map[x];
+    }
+    for (int i = 0; i < 64; i++)
+    {
+        infile >> maploaded.event[i].id >> maploaded.event[i].type;
+        if (maploaded.event[i].id == 0)
+        {
+            break;
+        }
+        infile.get(); // ignore the space between
+        int pos = 0;
+        while (1)
+        {
+            char ch = infile.get();
+            if (ch > '\0')
+            {
+                maploaded.event[i].act[pos] = ch;
+                pos++;
+            }
+            else
+            {
+                break;
+            }
+        }
     }
     infile.close();
 }
