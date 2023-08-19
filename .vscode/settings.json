@@ -81,7 +81,8 @@
     "cSpell.enableFiletypes": [
         "*",
         "!cpp",
-        "!json"
+        "!json",
+        "!md"
     ]
     
 }
