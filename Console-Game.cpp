@@ -41,6 +41,8 @@ struct MAP
     int rey;
 } maploaded;
 
+static inline int strcmp_asm(const char *cs, const char *ct);
+void CheckCommand(char *command);
 void Render();
 bool CheckSeqPos(int x, int y);
 void RealTimeLogic();
@@ -73,6 +75,63 @@ int main(int argc, char const *argv[])
 }
 
 // Define Functions
+static inline int strcmp_asm(const char *cs, const char *ct)
+{
+    int d0, d1;
+    register int __res;
+    __asm__ __volatile__(
+        "1:\tlodsb\n\t"
+        "scasb\n\t"
+        "jne 2f\n\t"
+        "testb %%al,%%al\n\t"
+        "jne 1b\n\t"
+        "xorl %%eax,%%eax\n\t"
+        "jmp 3f\n"
+        "2:\tsbbl %%eax,%%eax\n\t"
+        "orb $1,%%al\n"
+        "3:"
+        : "=a"(__res), "=&S"(d0), "=&D"(d1)
+        : "1"(cs), "2"(ct));
+    return __res;
+}
+
+void CheckCommand(char *command)
+{
+    // cut command
+    short comc = 0;
+    char comv[10][64];
+    char *token;
+    token = strtok(command, " ");
+    while (token != NULL)
+    {
+        strcpy(comv[comc++], token);
+
+        token = strtok(NULL, " ");
+    }
+
+    // run command
+    if (!strcmp_asm(comv[0], "event"))
+    {
+        if(!strcmp_asm(comv[1], "ins"))
+        {
+            char id = comv[2][0];
+            maploaded.map[player.levelsave[player.level][1]][player.levelsave[player.level][2]] = id;
+        }
+        else if(!strcmp_asm(comv[1], "edit"))
+        {
+
+        }
+    }
+    else if (!strcmp_asm(comv[0], "help")) //
+    {
+
+    }
+    else
+    {
+        return;
+    }
+}
+
 void Render()
 {
     ClearSrc();
@@ -203,6 +262,7 @@ void RealTimeLogic()
             {
                 player.level--;
                 ReadMap();
+                CheckMap();
             }
             break;
         }
@@ -212,6 +272,7 @@ void RealTimeLogic()
             {
                 player.level++;
                 ReadMap();
+                CheckMap();
             }
             break;
         }
@@ -222,11 +283,15 @@ void RealTimeLogic()
         }
         case 47: // "/"
         {
-            if(GameMode == 1)
+            if (GameMode == 1)
             {
+
                 SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), {0, 33});
-                
+                char comv[128];
+                gets(comv);
+                CheckCommand(comv);
             }
+            break;
         }
         case 48: // 0
         {
@@ -252,7 +317,6 @@ void RealTimeLogic()
                 maploaded.map[player.levelsave[player.level][1]][player.levelsave[player.level][2]] = '2';
                 maploaded.rex = player.levelsave[player.level][1];
                 maploaded.rey = player.levelsave[player.level][2];
-
             }
             break;
         }
@@ -309,7 +373,7 @@ void Save()
 void CheckMap()
 {
     bool legalrespoint = 1;
-    if (maploaded.map[maploaded.rex][maploaded.rey] != '3')
+    if (maploaded.map[maploaded.rex][maploaded.rey] != '2')
     {
         legalrespoint = 0;
     }
@@ -317,7 +381,7 @@ void CheckMap()
     {
         for (int y = 0; y < MP_Width; y++)
         {
-            if (legalrespoint == 0 && maploaded.map[x][y] == '3')
+            if (legalrespoint == 0 && maploaded.map[x][y] == '2')
             {
                 maploaded.rex = x;
                 maploaded.rey = y;
@@ -333,6 +397,7 @@ void CheckMap()
 
 void ReadMap()
 {
+    memset(maploaded.map,0,sizeof(maploaded.map));
     std::ifstream infile;
     char maploc[64];
     sprintf(maploc, "./data/maps/map%d.dat", player.level);
@@ -385,6 +450,7 @@ void SetWindowSize(int width, int height)
 
 void Init()
 {
+    setbuf(stdin, NULL);
     system("chcp 65001"); // UTF 8 mode
     setlocale(LC_ALL, "en_US.UTF-8");
     // system("color 0F");
@@ -402,11 +468,11 @@ void Init()
     CONSOLE_FONT_INFOEX cfi;
     cfi.cbSize = sizeof(cfi);
     cfi.nFont = 0;
-    cfi.dwFontSize.X = 10;  // Width of each character in the font
+    cfi.dwFontSize.X = 10; // Width of each character in the font
     cfi.dwFontSize.Y = 20; // Height
     cfi.FontFamily = FF_DONTCARE;
     cfi.FontWeight = FW_NORMAL;
-    std::wcscpy(cfi.FaceName, L"Courier New");                                // Choose your font
+    std::wcscpy(cfi.FaceName, L"Courier New");                             // Choose your font
     SetCurrentConsoleFontEx(GetStdHandle(STD_OUTPUT_HANDLE), FALSE, &cfi); // set font
 
     ClearSrc();
