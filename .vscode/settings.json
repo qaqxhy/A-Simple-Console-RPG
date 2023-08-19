@@ -77,6 +77,11 @@
     },
     "cSpell.words": [
         "capslock"
+    ],
+    "cSpell.enableFiletypes": [
+        "*",
+        "!cpp",
+        "!json"
     ]
     
 }
