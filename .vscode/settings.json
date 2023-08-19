@@ -74,6 +74,9 @@
         "valarray": "cpp",
         "wchar.h": "c",
         "locale": "cpp"
-    }
+    },
+    "cSpell.words": [
+        "capslock"
+    ]
     
 }
