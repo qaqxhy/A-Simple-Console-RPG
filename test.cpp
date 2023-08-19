@@ -101,4 +101,5 @@ int main(int argc, char const *argv[])
     int res = strcmp_asm("123", "123");
     printf("%d", res);
     return 0;
+    char a = 'z' - '0'; //17 74
 }
