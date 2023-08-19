@@ -13,7 +13,7 @@
 #define MP_Width 50
 
 #define UNDERLINE "\033[4m"
-#define CLOSEUNDERLINE "\033[0m"
+#define CLOSEUNDERLINE "\033[0m" // abandon
 
 short GameMode = 0;
 
@@ -77,7 +77,7 @@ int main(int argc, char const *argv[])
 }
 
 // Define Functions
-static inline int strcmp_asm(const char *cs, const char *ct)
+static inline int strcmp_asm(const char *cs, const char *ct) // fast string cmp
 {
     int d0, d1;
     register int __res;

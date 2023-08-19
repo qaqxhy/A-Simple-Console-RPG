@@ -2,6 +2,9 @@
 Windows system only!  
 Compile Command:  
 `g++ C:\Users\qaqxhy\CPP\Console-Game\Console-Game-C.cpp -o C:\Users\qaqxhy\CPP\Console-Game\Binary\BIN.exe -O3 -m64 -Wall -static-libgcc -fexec-charset=utf-8 -D__USE_MINGW_ANSI_STDIO`  
+# 更新记录
+    - 8/19/23: 把创造模式下的事件渲染写完了
+
 # 记录写代码遇到的问题  
 ## 输入  
 1. 无堵塞键盘输入  
