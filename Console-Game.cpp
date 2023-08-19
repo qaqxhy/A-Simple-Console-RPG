@@ -17,7 +17,9 @@
 
 short GameMode = 0;
 
-const char block[4][16] = {"  ", "██", "◯ ", "★"}; //
+const char block[64][16] = {"  ", "██", "◯ ", "★", "!!"};                                                                                                                                            //
+const char event_bl_caps[64][16] = {"AA", "BB", "CC", "DD", "EE", "FF", "GG", "HH", "II", "JJ", "KK", "LL", "MM", "NN", "OO", "PP", "QQ", "RR", "SS", "TT", "UU", "VV", "WW", "XX", "YY", "ZZ"};     // I DONT EVEN KNOW WHAT IM DOING
+const char event_bl_nonecaps[64][16] = {"aa", "bb", "cc", "dd", "ee", "ff", "gg", "hh", "ii", "jj", "kk", "ll", "mm", "nn", "oo", "pp", "qq", "rr", "ss", "tt", "uu", "vv", "ww", "xx", "yy", "zz"}; //
 
 const int WinHeight = (MP_Height + 3);
 const int WinWidth = (MP_Width * 2);
@@ -112,19 +114,17 @@ void CheckCommand(char *command)
     // run command
     if (!strcmp_asm(comv[0], "event"))
     {
-        if(!strcmp_asm(comv[1], "ins"))
+        if (!strcmp_asm(comv[1], "ins"))
         {
             char id = comv[2][0];
             maploaded.map[player.levelsave[player.level][1]][player.levelsave[player.level][2]] = id;
         }
-        else if(!strcmp_asm(comv[1], "edit"))
+        else if (!strcmp_asm(comv[1], "edit"))
         {
-
         }
     }
     else if (!strcmp_asm(comv[0], "help")) //
     {
-
     }
     else
     {
@@ -150,6 +150,10 @@ void Render()
                 {
                     strcat(vram, "U ");
                 }
+                else if (maploaded.map[x][y] > '9')
+                {
+                    strcat(vram, block[4]);
+                }
                 else
                 {
                     strcat(vram, block[maploaded.map[x][y] - '0']);
@@ -158,7 +162,18 @@ void Render()
             }
             case 1:
             {
-                strcat(vram, block[maploaded.map[x][y] - '0']);
+                if (maploaded.map[x][y] > '9' && maploaded.map[x][y] >= 'A' && maploaded.map[x][y] <= 'Z')
+                {
+                    strcat(vram, event_bl_caps[maploaded.map[x][y] - 'A']);
+                }
+                else if (maploaded.map[x][y] > '9' && maploaded.map[x][y] >= 'a' && maploaded.map[x][y] <= 'z')
+                {
+                    strcat(vram, event_bl_nonecaps[maploaded.map[x][y] - 'a']);
+                }
+                else
+                {
+                    strcat(vram, block[maploaded.map[x][y] - '0']);
+                }
                 break;
             }
             default:
@@ -398,7 +413,7 @@ void CheckMap()
 
 void ReadMap()
 {
-    memset(maploaded.map,0,sizeof(maploaded.map));
+    memset(maploaded.map, 0, sizeof(maploaded.map));
     std::ifstream infile;
     char maploc[64];
     sprintf(maploc, "./data/maps/map%d.dat", player.level);
