@@ -159,6 +159,7 @@ void Render()
             case 1:
             {
                 strcat(vram, block[maploaded.map[x][y] - '0']);
+                break;
             }
             default:
             {
