@@ -91,8 +91,9 @@ int main(int argc, char const *argv[])
 void DialogEvent(short id)
 {
     ClearSrc();
-    puts("────────────────────────────────────────────────Text────────────────────────────────────────────────");
+    puts("──────────────────────────────────Enter: Skip      Backspace: Quit──────────────────────────────────");
     int textpos = 0;
+    bool skip = 0;
     while (maploaded.event[id].act[textpos] != 0)
     {
         if (maploaded.event[id].act[textpos] == '\n')
@@ -102,11 +103,30 @@ void DialogEvent(short id)
                 // press any key to continue;
                 // _getch();
             }
-            _getch();
+            char ch = _getch();
+            if (ch == 13)
+            {
+                skip = 1;
+            }
+            else if (ch == 8)
+            {
+                return;
+            }
         }
         printf("%c", maploaded.event[id].act[textpos++]);
-        Sleep(50);
+        if (!skip)
+        {
+            Sleep(25);
+        }
     }
+    fflush(stdin);
+    while (!_kbhit())
+    {
+        // press any key to continue;
+        // _getch();
+    }
+    _getch();
+    fflush(stdin);
 }
 
 void EventCheck(short x, short y)
