@@ -269,7 +269,7 @@ void Render()
     }
     if (GameMode == 0)
     {
-        strcat(vram, "WASD: Move    F: Heal    <>: Change Level    Enter: Save    ESC: Save and Quit");
+        strcat(vram, "WASD: Move    F: Interactive    <>: Change Level    Enter: Save    ESC: Save and Quit");
     }
     else if (GameMode == 1)
     {
@@ -512,6 +512,8 @@ void ReadMap()
 {
     memset(maploaded.map, 0, sizeof(maploaded.map));
     memset(maploaded.event, 0, sizeof(maploaded.event));
+    maploaded.rex = 0;
+    maploaded.rey = 0;
     std::ifstream infile;
     char maploc[64];
     sprintf(maploc, "./data/maps/map%d.dat", player.level);
