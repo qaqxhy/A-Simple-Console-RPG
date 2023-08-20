@@ -17,7 +17,7 @@
 
 short GameMode = 0;
 
-const char block[64][16] = {"  ", "██", "◯ ", "★", "!!"};                                                                                                                                            //
+const char block[64][16] = {"  ", "██", "◯ ", "★", "☆", "!!"};                                                                                                                                       //
 const char event_bl_caps[64][16] = {"AA", "BB", "CC", "DD", "EE", "FF", "GG", "HH", "II", "JJ", "KK", "LL", "MM", "NN", "OO", "PP", "QQ", "RR", "SS", "TT", "UU", "VV", "WW", "XX", "YY", "ZZ"};     // I DONT EVEN KNOW WHAT IM DOING
 const char event_bl_nonecaps[64][16] = {"aa", "bb", "cc", "dd", "ee", "ff", "gg", "hh", "ii", "jj", "kk", "ll", "mm", "nn", "oo", "pp", "qq", "rr", "ss", "tt", "uu", "vv", "ww", "xx", "yy", "zz"}; //
 
@@ -38,7 +38,7 @@ struct PLAYER
     int health;
     int attach;
     int level;
-    short levelsave[100][3]; // passed?    last x    last y
+    unsigned short levelsave[100][4]; // passed?    last x    last y    level Score
 } player;
 
 struct MAP
@@ -49,10 +49,11 @@ struct MAP
     int rex;
     int rey;
     EVENT event[64];
+    unsigned short target_score;
 } maploaded;
 
 void DialogEvent(short id);
-void EventCheck(int x, int y);
+void EventCheck(short x, short y);
 void EditEvent(short idpos);
 static inline int strcmp_asm(const char *cs, const char *ct);
 void CheckCommand(char *command);
@@ -147,6 +148,12 @@ void EventCheck(short x, short y)
         }
         }
     }
+    else if (bl == '3')
+    {
+        player.levelsave[player.level][3]++;
+
+        maploaded.map[x][y] = '4';
+    }
 }
 
 void EditEvent(short idpos)
@@ -226,6 +233,55 @@ void CheckCommand(char *command)
             }
         }
     }
+    else if (!strcmp_asm(comv[0], "target-score"))
+    {
+        if (!strcmp_asm(comv[1], "set"))
+        {
+            int trgcount = 0;
+            for (int x = 0; x < MP_Height; x++)
+            {
+                for (int y = 0; y < MP_Width; y++)
+                {
+                    if (maploaded.map[x][y] == '3' || maploaded.map[x][y] == '4')
+                    {
+                        trgcount++;
+                    }
+                }
+            }
+            if (!strcmp_asm(comv[2], "none"))
+            {
+                maploaded.target_score = 0;
+            }
+            else if (!strcmp_asm(comv[2], "all"))
+            {
+                maploaded.target_score = trgcount;
+            }
+            else if (comv[2][0] >= '0' && comv[2][0] <= '9')
+            {
+                int trgsco_gonna_set = 0;
+                for (int i = 0; i < 64; i++)
+                {
+                    if (comv[2][i] > '9' || comv[2][i] < '0')
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        trgsco_gonna_set += comv[2][i] - '0';
+                        trgsco_gonna_set *= 10;
+                    }
+                }
+                if (trgsco_gonna_set > trgcount)
+                {
+                    maploaded.target_score = trgcount;
+                }
+                else
+                {
+                    maploaded.target_score = trgsco_gonna_set;
+                }
+            }
+        }
+    }
     else if (!strcmp_asm(comv[0], "help")) //
     {
     }
@@ -239,8 +295,14 @@ void Render()
 {
     ClearSrc();
     memset(vram, 0, sizeof(vram));
-
-    sprintf(vram, "HP: %d    AT: %d    LV: %d    Location: %d,%d\n", player.health, player.attach, player.level, player.levelsave[player.level][1], player.levelsave[player.level][2]);
+    if (GameMode == 0)
+    {
+        sprintf(vram, "HP: %d    AT: %d    LV: %d    Location: %d,%d    Score: %d\n", player.health, player.attach, player.level, player.levelsave[player.level][1], player.levelsave[player.level][2], player.levelsave[player.level][3]);
+    }
+    else if (GameMode == 1)
+    {
+        sprintf(vram, "LV: %d    Location: %d,%d    Target Score: %d\n", player.level, player.levelsave[player.level][1], player.levelsave[player.level][2], maploaded.target_score);
+    }
     for (int x = 0; x < MP_Height; x++)
     {
         for (int y = 0; y < MP_Width; y++)
@@ -255,7 +317,7 @@ void Render()
                 }
                 else if (maploaded.map[x][y] > '9')
                 {
-                    strcat(vram, block[4]);
+                    strcat(vram, block[5]);
                 }
                 else
                 {
@@ -289,12 +351,17 @@ void Render()
     }
     if (GameMode == 0)
     {
-        strcat(vram, "WASD: Move    F: Interactive    <>: Change Level    Enter: Save    ESC: Save and Quit");
+        strcat(vram, "WASD: Move    F: Interactive");
+        if (player.levelsave[player.level][3] >= maploaded.target_score)
+        {
+            strcat(vram, "    <>: Change Level");
+        }
+        strcat(vram, "    Enter: Save    ESC: Save and Quit");
     }
     else if (GameMode == 1)
     {
         strcat(vram, "WASD: Move    <>: Change Level    Enter: Save Map    ESC: Save Map and Quit\n");
-        strcat(vram, "0: Clear Block    1: Block    2: Set Res Point    3:Set End Point    /: Command");
+        strcat(vram, "0: Clear Block    1: Block    2: Set Res Point    3:Set Target    /: Command");
     }
     puts(vram); // faster than printf and cout
                 //! but 1 more \n behinde;
@@ -338,12 +405,17 @@ void RealTimeLogic()
             exit(0);
             break;
         }
-        case 102: // interactive
+        case 70: // F Interactive
         {
             EventCheck(player.levelsave[player.level][1], player.levelsave[player.level][2]);
             break;
         }
-        case 100: // WASD
+        case 102: // f Interactive
+        {
+            EventCheck(player.levelsave[player.level][1], player.levelsave[player.level][2]);
+            break;
+        }
+        case 100: // daws
         {
             if (CheckSeqPos(player.levelsave[player.level][1], player.levelsave[player.level][2] + 1))
             {
@@ -375,10 +447,47 @@ void RealTimeLogic()
             }
             break;
         }
+        case 68: // DAWS
+        {
+            if (CheckSeqPos(player.levelsave[player.level][1], player.levelsave[player.level][2] + 1))
+            {
+                player.levelsave[player.level][2]++;
+            }
+            break;
+        }
+        case 65:
+        {
+            if (CheckSeqPos(player.levelsave[player.level][1], player.levelsave[player.level][2] - 1))
+            {
+                player.levelsave[player.level][2]--;
+            }
+            break;
+        }
+        case 83:
+        {
+            if (CheckSeqPos(player.levelsave[player.level][1] + 1, player.levelsave[player.level][2]))
+            {
+                player.levelsave[player.level][1]++;
+            }
+            break;
+        }
+        case 87:
+        {
+            if (CheckSeqPos(player.levelsave[player.level][1] - 1, player.levelsave[player.level][2]))
+            {
+                player.levelsave[player.level][1]--;
+            }
+            break;
+        }
         case 44: // <
         {
             if (player.level - 1 >= 0)
             {
+                if (player.levelsave[player.level][3] < maploaded.target_score && GameMode == 0)
+                {
+                    break;
+                }
+                Save();
                 player.level--;
                 ReadMap();
                 CheckMap();
@@ -389,6 +498,11 @@ void RealTimeLogic()
         {
             if (player.level + 1 <= 99)
             {
+                if (player.levelsave[player.level][3] < maploaded.target_score && GameMode == 0)
+                {
+                    break;
+                }
+                Save();
                 player.level++;
                 ReadMap();
                 CheckMap();
@@ -467,7 +581,7 @@ void Save()
                 << player.level << " \n";
         for (int i = 0; i < 100; i++)
         {
-            outfile << player.levelsave[i][0] << " " << player.levelsave[i][1] << " " << player.levelsave[i][2] << "\n";
+            outfile << player.levelsave[i][0] << " " << player.levelsave[i][1] << " " << player.levelsave[i][2] << " " << player.levelsave[i][3] << "\n";
         }
         outfile.close();
     }
@@ -476,7 +590,8 @@ void Save()
     sprintf(maploc, "./data/maps/map%d.dat", player.level);
     outfile.open(maploc, std::ios::out | std::ios::trunc);
     outfile << maploaded.rex << " "
-            << maploaded.rey << " \n";
+            << maploaded.rey << " "
+            << maploaded.target_score << " \n";
     for (int x = 0; x < MP_Height; x++)
     {
         for (int y = 0; y < MP_Width; y++)
@@ -538,7 +653,7 @@ void ReadMap()
     char maploc[64];
     sprintf(maploc, "./data/maps/map%d.dat", player.level);
     infile.open(maploc);
-    infile >> maploaded.rex >> maploaded.rey;
+    infile >> maploaded.rex >> maploaded.rey >> maploaded.target_score;
     for (int x = 0; x < MP_Height; x++)
     {
         infile >> maploaded.map[x];
@@ -579,6 +694,10 @@ void CheckSave()
     {
         player.attach = 4;
     }
+    if (player.level < 0)
+    {
+        player.level = 0;
+    }
 }
 
 void ReadSave()
@@ -588,7 +707,7 @@ void ReadSave()
     infile >> player.health >> player.attach >> player.level;
     for (int i = 0; i < 100; i++)
     {
-        infile >> player.levelsave[i][0] >> player.levelsave[i][1] >> player.levelsave[i][2];
+        infile >> player.levelsave[i][0] >> player.levelsave[i][1] >> player.levelsave[i][2] >> player.levelsave[i][3];
     }
     infile.close();
 }
