@@ -1,0 +1,6 @@
+Command:
+    help //show this command helper.
+    event ins ID //insert event ID(A-Z,a-z) when event exist.
+    event edit ID TYPE //edit event ID(A-Z,a-z) type to TYPE(0-9) and enter text editor.
+    target-score set TYPE //set target score to TYPE NUM(none/all/or the number you put after).
+    

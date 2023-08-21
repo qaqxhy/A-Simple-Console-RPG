@@ -24,7 +24,8 @@ const char event_bl_nonecaps[64][16] = {"aa", "bb", "cc", "dd", "ee", "ff", "gg"
 const int WinHeight = (MP_Height + 3);
 const int WinWidth = (MP_Width * 2);
 
-char vram[10000];
+char CmdHelper[16384]; // im not crazy right?
+char vram[16384];
 
 struct EVENT
 {
@@ -52,7 +53,8 @@ struct MAP
     unsigned short target_score;
 } maploaded;
 
-void DialogEvent(short id);
+void ReadCmdHelper();
+void DialogEvent(char *texts, bool skip);
 void EventCheck(short x, short y);
 void EditEvent(short idpos);
 static inline int strcmp_asm(const char *cs, const char *ct);
@@ -89,15 +91,29 @@ int main(int argc, char const *argv[])
 }
 
 // Define Functions
-void DialogEvent(short id)
+void ReadCmdHelper()
+{
+    std::ifstream infile;
+    infile.open("./data/CmdHelper.dat");
+    for (unsigned short int chpos = 0; chpos < 16384; chpos++)
+    {
+        char ch = infile.get();
+        if (ch <= 0)
+        {
+            break;
+        }
+        CmdHelper[chpos] = ch;
+    }
+}
+
+void DialogEvent(char *texts, bool skip = 0)
 {
     ClearSrc();
     puts("──────────────────────────────────Enter: Skip      Backspace: Quit──────────────────────────────────");
     int textpos = 0;
-    bool skip = 0;
-    while (maploaded.event[id].act[textpos] != 0)
+    while (texts[textpos] != 0)
     {
-        if (maploaded.event[id].act[textpos] == '\n')
+        if (texts[textpos] == '\n')
         {
             while (!_kbhit())
             {
@@ -114,7 +130,7 @@ void DialogEvent(short id)
                 return;
             }
         }
-        printf("%c", maploaded.event[id].act[textpos++]);
+        printf("%c", texts[textpos++]);
         if (!skip)
         {
             Sleep(25);
@@ -139,7 +155,8 @@ void EventCheck(short x, short y)
         {
         case 0: // dialog
         {
-            DialogEvent(bl - 'A');
+            // DialogEvent(bl - 'A');
+            DialogEvent(maploaded.event[bl - 'A'].act);
             break;
         }
         default:
@@ -284,6 +301,7 @@ void CheckCommand(char *command)
     }
     else if (!strcmp_asm(comv[0], "help")) //
     {
+        DialogEvent(CmdHelper, 1);
     }
     else
     {
@@ -616,6 +634,9 @@ void Save()
         outfile << '\0' << '\n';
     }
     outfile.close();
+    outfile.open("./data/CmdHelper.dat");
+    outfile << CmdHelper;
+    outfile.close();
 }
 
 void CheckMap()
@@ -765,6 +786,8 @@ void Init()
     ReadMap();
 
     CheckMap();
+
+    ReadCmdHelper();
 
     Save();
 
