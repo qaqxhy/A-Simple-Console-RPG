@@ -1,5 +1,5 @@
 /*
-    My code is piece of shit, im gonna rewrite it.
+    My code is piece of shit, im gonna rewrite it (soon).
 */
 #include <iostream>
 #include <fstream>
