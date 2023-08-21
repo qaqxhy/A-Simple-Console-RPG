@@ -39,7 +39,7 @@ struct PLAYER
     int health;
     int attach;
     int level;
-    unsigned short levelsave[100][4]; // passed?    last x    last y    level Score
+    unsigned short levelsave[100][4]; // passed?(abandon)    last x    last y    level Score
 } player;
 
 struct MAP
@@ -113,7 +113,7 @@ void DialogEvent(char *texts, bool skip = 0)
     int textpos = 0;
     while (texts[textpos] != 0)
     {
-        if (texts[textpos] == '\n')
+        if (texts[textpos] == '\n' && skip == 0)
         {
             while (!_kbhit())
             {
@@ -299,12 +299,33 @@ void CheckCommand(char *command)
             }
         }
     }
+    else if (!strcmp_asm(comv[0], "reset-target"))
+    {
+        for (int x = 0; x < MP_Height; x++)
+        {
+            for (int y = 0; y < MP_Width; y++)
+            {
+                if (maploaded.map[x][y] == '4')
+                {
+                    maploaded.map[x][y] = '3';
+                }
+            }
+        }
+        player.levelsave[player.level][3] = 0;
+        Save();
+    }
     else if (!strcmp_asm(comv[0], "help")) //
+    {
+        DialogEvent(CmdHelper, 1);
+    }
+    else if (!strcmp_asm(comv[0], "?")) //
     {
         DialogEvent(CmdHelper, 1);
     }
     else
     {
+        char unkCmd[] = "Unknown Command";
+        DialogEvent(unkCmd, 1);
         return;
     }
 }
