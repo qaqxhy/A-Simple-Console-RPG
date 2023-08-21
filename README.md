@@ -4,6 +4,11 @@ I suggest you download the whole `Binary` folder, its has the tutorial map I cre
 Compile Command:  
 `g++ C:\Users\qaqxhy\CPP\Console-Game\Console-Game-C.cpp -o C:\Users\qaqxhy\CPP\Console-Game\Binary\BIN.exe -O3 -m64 -Wall -static-libgcc -fexec-charset=utf-8 -D__USE_MINGW_ANSI_STDIO`  
 # 更新记录
+    - 8/21/23: 修复分数系统
+    - 8/21/23: 修复教程关卡
+    - 8/21/23: 添加CmdHelper文件, 用于help指令
+    - 8/21/23: 添加指令reset-target重置目标
+    - 8/21/23: 修改跳过对话
     - 8/19/23: 添加对话跳过及退出功能
     - 8/19/23: 把文字(对话)事件及存档完成
     - 8/19/23: 把创造模式下的事件渲染写完了
