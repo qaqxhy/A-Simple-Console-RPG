@@ -39,7 +39,7 @@ struct PLAYER
     int health;
     int attach;
     int level;
-    unsigned short levelsave[100][4]; // passed?(abandon)    last x    last y    level Score
+    unsigned short levelsave[100][4]; // played before?    last x    last y    level Score
 } player;
 
 struct MAP
@@ -530,6 +530,12 @@ void RealTimeLogic()
                 player.level--;
                 ReadMap();
                 CheckMap();
+                if (player.levelsave[player.level][0] == 0)
+                {
+                    player.levelsave[player.level][1] = maploaded.rex;
+                    player.levelsave[player.level][2] = maploaded.rex;
+                    player.levelsave[player.level][0] = 1;
+                }
             }
             break;
         }
@@ -545,6 +551,12 @@ void RealTimeLogic()
                 player.level++;
                 ReadMap();
                 CheckMap();
+                if (player.levelsave[player.level][0] == 0)
+                {
+                    player.levelsave[player.level][1] = maploaded.rex;
+                    player.levelsave[player.level][2] = maploaded.rex;
+                    player.levelsave[player.level][0] = 1;
+                }
             }
             break;
         }
