@@ -20,6 +20,7 @@ short GameMode = 0;
 const char block[64][16] = {"  ", "██", "◯ ", "★", "☆", "!!"};                                                                                                                                       //
 const char event_bl_caps[64][16] = {"AA", "BB", "CC", "DD", "EE", "FF", "GG", "HH", "II", "JJ", "KK", "LL", "MM", "NN", "OO", "PP", "QQ", "RR", "SS", "TT", "UU", "VV", "WW", "XX", "YY", "ZZ"};     // I DONT EVEN KNOW WHAT IM DOING
 const char event_bl_nonecaps[64][16] = {"aa", "bb", "cc", "dd", "ee", "ff", "gg", "hh", "ii", "jj", "kk", "ll", "mm", "nn", "oo", "pp", "qq", "rr", "ss", "tt", "uu", "vv", "ww", "xx", "yy", "zz"}; //
+const char pswd_event_bl[17][16] = {"", "-→", "←-", "──", "↓↓", "┌─", "─┐", "┬┬", "↑↑", "└─", "─┘", "┴┴", "│ ", "├─", "─┤", "┼┼"};                                                                   // (Bin) Up Down Left Right
 
 const int WinHeight = (MP_Height + 3);
 const int WinWidth = (MP_Width * 2);
@@ -32,6 +33,7 @@ struct EVENT
     char id;
     short type;
     char act[1024];
+    short dir;
 };
 
 struct PLAYER
@@ -91,6 +93,30 @@ int main(int argc, char const *argv[])
 }
 
 // Define Functions
+void PasswdEvent(char *Cpw) // correct passwd
+{
+    ClearSrc();
+    puts("───────────────────────────────────────────Enter Password───────────────────────────────────────────");
+    char input[128];
+    gets(input);
+    // char afencr[128] = SHA256(input);
+    //  strcmp_asm(Cpw,afencr);
+    strcat(input, "\n");
+    if (!strcmp(input, Cpw))
+    {
+        char AC[] = "Correct !";
+        DialogEvent(AC, 1);
+        player.levelsave[player.level][3]++;
+        return;
+    }
+    else
+    {
+        char WA[] = "Wrong Password !";
+        DialogEvent(WA, 1);
+        return;
+    }
+}
+
 void ReadCmdHelper()
 {
     std::ifstream infile;
@@ -157,6 +183,11 @@ void EventCheck(short x, short y)
         {
             // DialogEvent(bl - 'A');
             DialogEvent(maploaded.event[bl - 'A'].act);
+            break;
+        }
+        case 1:
+        {
+            PasswdEvent(maploaded.event[bl - 'A'].act);
             break;
         }
         default:
@@ -246,7 +277,48 @@ void CheckCommand(char *command)
             {
                 maploaded.event[id - 'A'].id = id;
                 maploaded.event[id - 'A'].type = comv[3][0] - '0';
-                EditEvent(id - 'A');
+                switch (maploaded.event[id - 'A'].type)
+                {
+                case 0:
+                {
+                    EditEvent(id - 'A');
+                    break;
+                }
+                case 1:
+                {
+                    short bkpos = 0;
+                    for (int i = 0; i < 64; i++)
+                    {
+
+                        if ((comv[4][i] == 'U' || comv[4][i] == 'u') && (bkpos >> 3) % 2 == 0)
+                        {
+                            bkpos += 0B1000;
+                        }
+                        else if ((comv[4][i] == 'D' || comv[4][i] == 'd') && (bkpos >> 2) % 2 == 0)
+                        {
+                            bkpos += 0B0100;
+                        }
+                        else if ((comv[4][i] == 'L' || comv[4][i] == 'l') && (bkpos >> 1) % 2 == 0)
+                        {
+                            bkpos += 0B0010;
+                        }
+                        else if ((comv[4][i] == 'R' || comv[4][i] == 'r') && bkpos % 2 == 0)
+                        {
+                            bkpos += 0B0001;
+                        }
+                        else if (comv[4][i] <= 0)
+                        {
+                            break;
+                        }
+                    }
+                    maploaded.event[id - 'A'].dir = bkpos;
+                    EditEvent(id - 'A');
+                }
+                default:
+                {
+                    break;
+                }
+                }
             }
         }
     }
@@ -259,7 +331,7 @@ void CheckCommand(char *command)
             {
                 for (int y = 0; y < MP_Width; y++)
                 {
-                    if (maploaded.map[x][y] == '3' || maploaded.map[x][y] == '4')
+                    if (maploaded.map[x][y] == '3' || maploaded.map[x][y] == '4' || (maploaded.map[x][y] > '9' && maploaded.event[maploaded.map[x][y] - 'A'].type == 1))
                     {
                         trgcount++;
                     }
@@ -356,7 +428,24 @@ void Render()
                 }
                 else if (maploaded.map[x][y] > '9')
                 {
-                    strcat(vram, block[5]);
+                    switch (maploaded.event[maploaded.map[x][y] - 'A'].type)
+                    {
+                    case 0:
+                    {
+                        strcat(vram, block[5]);
+                        break;
+                    }
+                    case 1:
+                    {
+                        strcat(vram, pswd_event_bl[maploaded.event[maploaded.map[x][y] - 'A'].dir]);
+                        break;
+                    }
+                    default:
+                    {
+                        strcat(vram, block[5]);
+                        break;
+                    }
+                    }
                 }
                 else
                 {
@@ -674,6 +763,10 @@ void Save()
             continue;
         }
         outfile << maploaded.event[i].id << ' ' << maploaded.event[i].type << ' ';
+        if (maploaded.event[i].type == 1)
+        {
+            outfile << maploaded.event[i].dir << ' ';
+        }
         int pos = 0;
         while (maploaded.event[i].act[pos] != 0)
         {
@@ -734,6 +827,10 @@ void ReadMap()
         if (maploaded.event[i].id == 0)
         {
             break;
+        }
+        if (maploaded.event[i].type == 1)
+        {
+            infile >> maploaded.event[i].dir;
         }
         infile.get(); // ignore the space between
         int pos = 0;
@@ -820,7 +917,7 @@ void Init()
     cfi.dwFontSize.Y = 20; // Height
     cfi.FontFamily = FF_DONTCARE;
     cfi.FontWeight = FW_NORMAL;
-    std::wcscpy(cfi.FaceName, L"Courier New");                             // Choose your font
+    std::wcscpy(cfi.FaceName, L"Consolas");                                // Choose your font
     SetCurrentConsoleFontEx(GetStdHandle(STD_OUTPUT_HANDLE), FALSE, &cfi); // set font
 
     ClearSrc();

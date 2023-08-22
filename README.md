@@ -4,6 +4,7 @@ I suggest you download the whole `Binary` folder, its has the tutorial map I cre
 Compile Command:  
 `g++ C:\Users\qaqxhy\CPP\Console-Game\Console-Game-C.cpp -o C:\Users\qaqxhy\CPP\Console-Game\Binary\BIN.exe -O3 -m64 -Wall -static-libgcc -fexec-charset=utf-8 -D__USE_MINGW_ANSI_STDIO`  
 # 更新记录
+    - 8/22/23: 见B站: `https://github.com/qaqxhy/A-Simple-Console-RPG/tree/main`
     - 8/21/23: 修复分数系统
     - 8/21/23: 修复教程关卡
     - 8/21/23: 添加CmdHelper文件, 用于help指令
