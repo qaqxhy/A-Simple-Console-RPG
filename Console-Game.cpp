@@ -395,11 +395,11 @@ void Render()
         {
             strcat(vram, "    <>: Change Level");
         }
-        strcat(vram, "    Enter: Save    ESC: Save and Quit");
+        strcat(vram, "    Enter: Save    ESC: Save & Quit");
     }
     else if (GameMode == 1)
     {
-        strcat(vram, "WASD: Move    <>: Change Level    Enter: Save Map    ESC: Save Map and Quit\n");
+        strcat(vram, "WASD: Move    <>: Change Level    Enter: Save Map    ESC: Save Map & Quit\n");
         strcat(vram, "0: Clear Block    1: Block    2: Set Res Point    3:Set Target    /: Command");
     }
     puts(vram); // faster than printf and cout
@@ -612,6 +612,18 @@ void RealTimeLogic()
             }
             break;
         }
+        case 82: // R
+        {
+            player.levelsave[player.level][1] = maploaded.rex;
+            player.levelsave[player.level][2] = maploaded.rey;
+            player.levelsave[player.level][0] = 1;
+        }
+        case 114: // r
+        {
+            player.levelsave[player.level][1] = maploaded.rex;
+            player.levelsave[player.level][2] = maploaded.rey;
+            player.levelsave[player.level][0] = 1;
+        }
         default:
         {
             break;
@@ -764,7 +776,6 @@ void ReadSave()
         infile >> player.levelsave[i][0] >> player.levelsave[i][1] >> player.levelsave[i][2] >> player.levelsave[i][3];
     }
     infile.close();
-    
 }
 
 void ClearSrc()
