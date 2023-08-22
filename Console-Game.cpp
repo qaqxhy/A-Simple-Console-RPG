@@ -533,7 +533,7 @@ void RealTimeLogic()
                 if (player.levelsave[player.level][0] == 0)
                 {
                     player.levelsave[player.level][1] = maploaded.rex;
-                    player.levelsave[player.level][2] = maploaded.rex;
+                    player.levelsave[player.level][2] = maploaded.rey;
                     player.levelsave[player.level][0] = 1;
                 }
             }
@@ -554,7 +554,7 @@ void RealTimeLogic()
                 if (player.levelsave[player.level][0] == 0)
                 {
                     player.levelsave[player.level][1] = maploaded.rex;
-                    player.levelsave[player.level][2] = maploaded.rex;
+                    player.levelsave[player.level][2] = maploaded.rey;
                     player.levelsave[player.level][0] = 1;
                 }
             }
@@ -764,6 +764,7 @@ void ReadSave()
         infile >> player.levelsave[i][0] >> player.levelsave[i][1] >> player.levelsave[i][2] >> player.levelsave[i][3];
     }
     infile.close();
+    
 }
 
 void ClearSrc()
@@ -823,6 +824,13 @@ void Init()
     ReadCmdHelper();
 
     Save();
+
+    if (player.levelsave[player.level][0] == 0)
+    {
+        player.levelsave[player.level][1] = maploaded.rex;
+        player.levelsave[player.level][2] = maploaded.rey;
+        player.levelsave[player.level][0] = 1;
+    }
 
     SetConsoleTitleW(L"Game");
     puts("Preas any key to start!");
