@@ -395,6 +395,10 @@ void Render()
         {
             strcat(vram, "    <>: Change Level");
         }
+        else
+        {
+            strcat(vram, "    < : Change Level");
+        }
         strcat(vram, "    Enter: Save    ESC: Save & Quit");
     }
     else if (GameMode == 1)
@@ -522,10 +526,10 @@ void RealTimeLogic()
         {
             if (player.level - 1 >= 0)
             {
-                if (player.levelsave[player.level][3] < maploaded.target_score && GameMode == 0)
-                {
-                    break;
-                }
+                // if (player.levelsave[player.level][3] < maploaded.target_score && GameMode == 0)
+                // {
+                //     break;
+                // }
                 Save();
                 player.level--;
                 ReadMap();
